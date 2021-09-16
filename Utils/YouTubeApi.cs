@@ -14,12 +14,27 @@ namespace YouTubeParser.Utils
     {
         private static string API_KEY = "AIzaSyBcVjOPtbwM0UjVZeKb495n14453N9cQ6w";
         private static string TOKEN = "";
-        private static string url = $"https://youtube.googleapis.com/youtube/v3/channels?part=snippet%2CcontentDetails%2Cstatistics&";
-        private static Dictionary<string, string> HEADERS = new Dictionary<string, string>() { { "Authorization", "Bearer " + TOKEN }, { "Accept", "application/json" } };
+        private static string BASE_URL = $"https://youtube.googleapis.com/youtube/v3/channels?part=snippet%2CcontentDetails%2Cstatistics&";
+        private static Dictionary<string, string> HEADERS = new Dictionary<string, string>() { { "Accept", "application/json" } };
+        
+        public async Task<string> GetIdFromLink(string url)
+        {
+            if (url.Contains("/channel/"))
+                return url.Split("/channel/")[1];
+            var username = url.Remove(0,url.LastIndexOf('/')+1);
+            BASE_URL += $"forUsername=${username}&key=${API_KEY}";
+            using (var request = CreateRequestMessage(HttpMethod.Post, url, HEADERS))
+            {
+                var result = await SendAsync(request);
+                var jElement = JsonSerializer.Deserialize<JsonElement>(await result.Content.ReadAsByteArrayAsync());
+                return jElement.EnumerateArray().ElementAt(0).GetString();
+            }
+
+        }
         public async Task<Channel> GetChannelById(string id)
         {
-            url = url + $"id={id}&key={API_KEY}";
-            using (var request = CreateRequestMessage(HttpMethod.Post, url, HEADERS))
+            BASE_URL += $"id={id}&key={API_KEY}";
+            using (var request = CreateRequestMessage(HttpMethod.Post, BASE_URL, HEADERS))
             {
                 var result = await SendAsync(request);
                 return JsonSerializer.Deserialize<Channel>(await result.Content.ReadAsByteArrayAsync());

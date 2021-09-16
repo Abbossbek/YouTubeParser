@@ -1,5 +1,4 @@
-﻿using HtmlAgilityPack;
-
+﻿
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,6 +6,7 @@ using System.Net.Http;
 using System.Windows;
 
 using YouTubeParser.Models;
+using YouTubeParser.Utils;
 
 namespace YouTubeParser
 {
@@ -34,6 +34,13 @@ namespace YouTubeParser
             }
             foreach (var channel in channels)
             {
+                using (HttpClient client = new())
+                {
+                    var result = await client.GetAsync(channel.Link);
+                    var body = await result.Content.ReadAsStringAsync();
+                    var name = body.Split("\"name\": \"")[1];
+                    channel.Name = name.Remove(name.IndexOf("\""));
+                }
             }
         }
     }

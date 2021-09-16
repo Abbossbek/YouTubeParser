@@ -8,7 +8,9 @@ namespace YouTubeParser.Models
 {
     public class Channel
     {
+        public string Id { get; set; }
         public string Link { get; set; }
+        public string Username { get; set; }
         public string Name { get; set; }
         public int SubcribersCount { get; set; }
         public string Country { get; set; }
