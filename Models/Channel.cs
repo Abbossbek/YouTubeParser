@@ -8,16 +8,20 @@ namespace YouTubeParser.Models
 {
     public class Channel
     {
-        public string Id { get; set; }
+        private string telegram;
+
         public string Link { get; set; }
-        public string Username { get; set; }
         public string Name { get; set; }
         public int SubcribersCount { get; set; }
         public string Country { get; set; }
         public string Email { get; set; }
-        public string Telegram { get; set; }
+        public string Telegram
+        {
+            get { return Description.Split().Where(x => x.Contains("https://t.me"))?.FirstOrDefault() ?? telegram; }
+            set { telegram = value; }
+        }
         public string Description { get; set; }
-        public DateTime? RegistrationDate { get; set; }
+        public string RegistrationDate { get; set; }
         public int ViewsCount { get; set; }
     }
 }

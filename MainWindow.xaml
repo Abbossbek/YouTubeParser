@@ -8,21 +8,23 @@
         Title="MainWindow"
         Height="450"
         Width="800">
-    <Grid>
+    <Grid Background="{DynamicResource MaterialDesignDarkBackground}">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" />
-            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="100" />
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
-            <RowDefinition Height="50" />
+            <RowDefinition Height="80" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        <Button x:Name="btnParse"
+        <Button x:Name="btnAdd"
+                Grid.Column="1"
                 Click="btnParse_Click"
                 Margin="10"
-                Content="Parse" />
-        <TextBox x:Name="tbLinks"
-                     Margin="10"
-                     Grid.Row="1" />
+                Content="Add" />
+        <TextBox x:Name="tbLink" Height="30" Foreground="{DynamicResource MaterialDesignDarkForeground}" Margin="10"/>
+        <DataGrid x:Name="dgChannels" Grid.Row="1" Grid.ColumnSpan="2" Margin="10" CanUserAddRows="False">
+            
+        </DataGrid>
     </Grid>
 </Window>
