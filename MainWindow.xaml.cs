@@ -6,11 +6,14 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Data;
 using System.Data.OleDb;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
+using System.Web;
 using System.Windows;
 
 using YouTubeParser.Models;
@@ -63,7 +66,7 @@ namespace YouTubeParser
             tbLink.Text = "";
             using (HttpClient client = new())
             {
-                var result = await client.GetAsync(channel.Link);
+                var result = await client.GetAsync(channel.Link + "?hl=en");
                 var body = await result.Content.ReadAsStringAsync();
                 try
                 {
@@ -79,7 +82,7 @@ namespace YouTubeParser
                     channel.SubcribersCount = Convert.ToInt32(subs.Contains('K') ? subs.Replace("K", subs.Contains('.') ? Convert.ToString(Math.Pow(10, 5 - (subs.Length - subs.IndexOf('.')))).Substring(1) : "000").Replace(".", "") : subs.Contains('M') ? subs.Replace("M", subs.Contains('.') ? Convert.ToString(Math.Pow(10, 8 - (subs.Length - subs.IndexOf('.')))).Substring(1) : "000000").Replace(".", "") : subs);
                 }
                 catch { }
-                result = await client.GetAsync(channel.Link + "/about");
+                result = await client.GetAsync(channel.Link + "/about?hl=en");
                 body = await result.Content.ReadAsStringAsync();
                 try
                 {
@@ -90,7 +93,7 @@ namespace YouTubeParser
                 try
                 {
                     var description = body.Split("property=\"og:description\" content=\"").Last();
-                    channel.Description = description.Remove(description.IndexOf("\"><meta"));
+                    channel.Description = HttpUtility.HtmlDecode(description.Remove(description.IndexOf("\"><meta")));
                 }
                 catch { }
                 try
@@ -116,20 +119,28 @@ namespace YouTubeParser
             var properties = typeof(T).GetProperties(BindingFlags.Public | BindingFlags.Instance);
             foreach (var prop in properties)
             {
-                //Defining type of data column gives proper data table 
-                var type = (prop.PropertyType.IsGenericType && prop.PropertyType.GetGenericTypeDefinition() == typeof(Nullable<>) ? Nullable.GetUnderlyingType(prop.PropertyType) : prop.PropertyType);
-                //Setting column names as Property names
-                dataTable.Columns.Add(prop.Name, type);
+                try
+                {
+                    //Defining type of data column gives proper data table 
+                    var type = (prop.PropertyType.IsGenericType && prop.PropertyType.GetGenericTypeDefinition() == typeof(Nullable<>) ? Nullable.GetUnderlyingType(prop.PropertyType) : prop.PropertyType);
+                    //Setting column names as Property names
+                    dataTable.Columns.Add(prop.Name, type);
+                }
+                catch { }
             }
             foreach (var item in items)
             {
-                var values = new object[properties.Length];
-                for (var i = 0; i < properties.Length; i++)
+                try
                 {
-                    //inserting property values to data table rows
-                    values[i] = properties[i].GetValue(item, null);
+                    var values = new object[properties.Length];
+                    for (var i = 0; i < properties.Length; i++)
+                    {
+                        //inserting property values to data table rows
+                        values[i] = properties[i].GetValue(item, null);
+                    }
+                    dataTable.Rows.Add(values);
                 }
-                dataTable.Rows.Add(values);
+                catch { }
             }
             //put a breakpoint here and check data table
             return dataTable;
@@ -161,9 +172,13 @@ namespace YouTubeParser
                         command.ExecuteNonQuery();
                         foreach (DataRow row in dataTable.Rows)
                         {
-                            var rowValues = (from DataColumn column in dataTable.Columns select (row[column] != null && row[column] != DBNull.Value) ? row[column].ToString() : string.Empty).ToList();
-                            command.CommandText = $"INSERT INTO [{tableName}]({string.Join(",", columnNames.Select(c => $"[{c}]"))}) VALUES ({string.Join(",", rowValues.Select(r => $"'{r}'").ToArray())});";
-                            command.ExecuteNonQuery();
+                            try
+                            {
+                                var rowValues = (from DataColumn column in dataTable.Columns select (row[column] != null && row[column] != DBNull.Value) ? row[column].ToString() : string.Empty).ToList();
+                                command.CommandText = $"INSERT INTO [{tableName}]({string.Join(",", columnNames.Select(c => $"[{c}]"))}) VALUES ({string.Join(",", rowValues.Select(r => $"'{r}'").ToArray())});";
+                                command.ExecuteNonQuery();
+                            }
+                            catch { }
                         }
                     }
 
