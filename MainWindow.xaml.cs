@@ -177,10 +177,10 @@ namespace YouTubeParser
                             try
                             {
                                 var rowValues = (from DataColumn column in dataTable.Columns select (row[column] != null && row[column] != DBNull.Value) ? row[column].ToString() : string.Empty).ToList();
-                                command.CommandText = $"INSERT INTO [{tableName}]({string.Join(",", columnNames.Select(c => $"[{c}]"))}) VALUES ({string.Join(",", rowValues.Select(r => $"'{r}'").ToArray())});";
+                                command.CommandText = $"INSERT INTO [{tableName}]({string.Join(",", columnNames.Select(c => $"[{c}]"))}) VALUES ({string.Join(",", rowValues.Select(r => $"'{r.Replace('\'', '`')}'").ToArray())});";
                                 command.ExecuteNonQuery();
                             }
-                            catch { }
+                            catch(Exception ex) { }
                         }
                     }
 
