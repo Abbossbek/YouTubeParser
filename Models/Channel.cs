@@ -10,6 +10,7 @@ namespace YouTubeParser.Models
     {
         private string telegram;
 
+        public int Number { get; set; }
         public string Link { get; set; }
         public string Name { get; set; }
         public int SubcribersCount { get; set; }
@@ -17,7 +18,14 @@ namespace YouTubeParser.Models
         public string Email { get; set; }
         public string Telegram
         {
-            get { return Description.Split().Where(x => x.Contains("https://t.me"))?.FirstOrDefault() ?? telegram; }
+            get
+            {
+                try
+                {
+                    return Description.Split().Where(x => x.Contains("https://t.me"))?.FirstOrDefault();
+                }
+                catch { return telegram; }
+            }
             set { telegram = value; }
         }
         public string Description { get; set; }

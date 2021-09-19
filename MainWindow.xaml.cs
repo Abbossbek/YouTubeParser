@@ -48,6 +48,7 @@ namespace YouTubeParser
                 foreach (var link in links)
                 {
                     var channel = await GetChannelFromLink(link);
+                    if(channel is not null)
                     channels.Add(channel);
                 }
             }
@@ -109,6 +110,7 @@ namespace YouTubeParser
                 }
                 catch { }
             }
+            channel.Number = channels.Count+1;
             return channel;
         }
         public static DataTable ToDataTable<T>(List<T> items)
